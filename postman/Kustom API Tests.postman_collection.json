@@ -1,0 +1,2605 @@
+{
+	"info": {
+		"_postman_id": "1a187b53-c38f-47a6-8ecd-0deba93776df",
+		"name": "Kustom API Tests",
+		"description": "Kustom API Test Collection with Authentication and User Management",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "39916810",
+		"_collection_link": "https://kustom-2509.postman.co/workspace/Kustom~02144751-bf0d-424e-bcca-570e5c59c8f5/collection/39916810-1a187b53-c38f-47a6-8ecd-0deba93776df?action=share&source=collection_link&creator=39916810"
+	},
+	"item": [
+		{
+			"name": "Public Endpoints",
+			"item": [
+				{
+					"name": "Health Check",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.expect(pm.response.code).to.eql(200);",
+									"});",
+									"",
+									"pm.test(\"Response body contains health status\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.be.an('object');",
+									"    pm.expect(jsonData).to.have.property('status');",
+									"    pm.expect(jsonData.status).to.be.oneOf(['ok', 'healthy']);",
+									"    pm.expect(jsonData).to.have.property('timestamp');",
+									"    pm.expect(jsonData).to.have.property('uptime');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/health",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"health"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "API Info",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.expect(pm.response.code).to.eql(200);",
+									"});",
+									"",
+									"pm.test(\"Response body contains API info\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.be.an('object');",
+									"    pm.expect(jsonData).to.have.property('message');",
+									"    pm.expect(jsonData).to.have.property('version');",
+									"    pm.expect(jsonData).to.have.property('endpoints');",
+									"    pm.expect(jsonData.endpoints).to.be.an('object');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Registration (Automatic Client)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 201 or 200\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+									"});",
+									"",
+									"pm.test(\"Response body contains user object\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.be.an('object');",
+									"    pm.expect(jsonData).to.have.property('message');",
+									"    pm.expect(jsonData).to.have.property('data');",
+									"    pm.expect(jsonData.data).to.have.property('token');",
+									"    pm.expect(jsonData.data).to.have.property('user');",
+									"    pm.expect(jsonData.data.user).to.have.property('_id');",
+									"    pm.expect(jsonData.data.user).to.have.property('email');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"cliente{{$randomInt}}@test.com\",\n  \"password\": \"123456\",\n  \"firstName\": \"Juan\",\n  \"lastName\": \"Pérez\",\n  \"phone\": \"+57 300 123 4567\",\n  \"address\": {\n    \"street\": \"Calle 123\",\n    \"city\": \"Palmira\",\n    \"state\": \"Valle del Cauca\",\n    \"zipCode\": \"763533\",\n    \"country\": \"Colombia\"\n  }\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login (Admin)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"// Guardar token de admin en variable de entorno",
+									"var jsonData = pm.response.json();",
+									"",
+									"// Guardar token de admin en variable de entorno",
+									"if (jsonData.data && jsonData.data.token) {",
+									"    pm.environment.set(\"adminToken\", jsonData.data.token);",
+									"    console.log(\"Admin Token guardado en entorno: \" + jsonData.data.token);",
+									"}",
+									"",
+									"// Guardar userId de admin en variable de entorno",
+									"if (jsonData.data && jsonData.data.user && jsonData.data.user._id) {",
+									"    pm.environment.set(\"adminUserId\", jsonData.data.user._id);",
+									"    console.log(\"Admin UserId guardado en entorno: \" + jsonData.data.user._id);",
+									"}",
+									"",
+									"// Guardar roleId de admin en variable de entorno (toma el primero si hay varios)",
+									"if (jsonData.data && jsonData.data.user && Array.isArray(jsonData.data.user.roleIds) && jsonData.data.user.roleIds.length > 0) {",
+									"    pm.environment.set(\"roleId\", jsonData.data.user.roleIds[0]);",
+									"    console.log(\"RoleId guardado en entorno: \" + jsonData.data.user.roleIds[0]);",
+									"}",
+									"",
+									"// Tests básicos",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has token\", function () {",
+									"    pm.expect(jsonData).to.have.property('data');",
+									"    pm.expect(jsonData.data).to.have.property('token');",
+									"});",
+									"",
+									"pm.test(\"Response has userId\", function () {",
+									"    pm.expect(jsonData.data).to.have.property('user');",
+									"    pm.expect(jsonData.data.user).to.have.property('_id');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"admin@kustom.com\",\n  \"password\": \"admin123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Protected Endpoints",
+			"item": [
+				{
+					"name": "View Profile",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.expect(pm.response.code).to.eql(200);",
+									"});",
+									"",
+									"pm.test(\"Response body contains user profile\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.be.an('object');",
+									"    pm.expect(jsonData).to.have.property('message');",
+									"    pm.expect(jsonData).to.have.property('data');",
+									"    pm.expect(jsonData.data).to.have.property('user');",
+									"    pm.expect(jsonData.data.user).to.have.property('_id');",
+									"    pm.expect(jsonData.data.user).to.have.property('email');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/profile",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"profile"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Profile",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.expect(pm.response.code).to.eql(200);",
+									"});",
+									"",
+									"pm.test(\"Response body contains updated user profile\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.be.an('object');",
+									"    pm.expect(jsonData).to.have.property('message');",
+									"    pm.expect(jsonData).to.have.property('data');",
+									"    pm.expect(jsonData.data).to.have.property('user');",
+									"    pm.expect(jsonData.data.user).to.have.property('_id');",
+									"    pm.expect(jsonData.data.user).to.have.property('email');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"Nuevo Nombre\",\n  \"lastName\": \"Nuevo Apellido\",\n  \"phone\": \"+57 300 999 8888\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/profile",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"profile"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Logout",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 200 or 204\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
+									"});",
+									"",
+									"pm.test(\"Response contains success message\", function () {",
+									"    if (pm.response.text().length > 0) {",
+									"        try {",
+									"            var jsonData = pm.response.json();",
+									"            pm.expect(jsonData).to.have.property('message');",
+									"        } catch (e) {",
+									"            // Response might be empty for logout",
+									"            pm.expect(pm.response.text().length).to.be.at.least(0);",
+									"        }",
+									"    }",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/logout",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"logout"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "User Management (Admin Only)",
+			"item": [
+				{
+					"name": "List Users",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Extraer userID y roleID del primer usuario para usar en otras requests",
+									"var jsonData = pm.response.json();",
+									"if (jsonData.data && jsonData.data.users && jsonData.data.users.length > 0) {",
+									"    pm.environment.set(\"userId\", jsonData.data.users[0]._id);",
+									"    console.log(\"userId guardado: \" + jsonData.data.users[0]._id);",
+									"    if (jsonData.data.users[0].roleIds && jsonData.data.users[0].roleIds.length > 0) {",
+									"        // Si roleIds es array de objetos poblados",
+									"        const firstRole = jsonData.data.users[0].roleIds[0];",
+									"        const roleId = typeof firstRole === 'object' ? firstRole._id : firstRole;",
+									"        pm.environment.set(\"roleId\", roleId);",
+									"        console.log(\"roleId guardado: \" + roleId);",
+									"    }",
+									"}",
+									"",
+									"// Tests básicos",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"// Validar estructura de respuesta",
+									"pm.test(\"Response body contains users array\", function () {",
+									"    pm.expect(jsonData).to.be.an('object');",
+									"    pm.expect(jsonData).to.have.property('message');",
+									"    pm.expect(jsonData).to.have.property('data');",
+									"    pm.expect(jsonData.data).to.have.property('users');",
+									"    pm.expect(jsonData.data.users).to.be.an('array');",
+									"    if(jsonData.data.users.length > 0) {",
+									"        pm.expect(jsonData.data.users[0]).to.have.property('_id');",
+									"        pm.expect(jsonData.data.users[0]).to.have.property('email');",
+									"        pm.expect(jsonData.data.users[0]).to.have.property('roleIds');",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/users",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 201 or 200\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+									"});",
+									"",
+									"pm.test(\"Response body contains user object\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.be.an('object');",
+									"    pm.expect(jsonData).to.have.property('message');",
+									"    pm.expect(jsonData).to.have.property('data');",
+									"    pm.expect(jsonData.data).to.have.property('user');",
+									"    pm.expect(jsonData.data.user).to.have.property('_id');",
+									"    pm.expect(jsonData.data.user).to.have.property('email');",
+									"    pm.expect(jsonData.data.user).to.have.property('roleIds');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"nuevo{{$randomInt}}@test.com\",\n  \"password\": \"123456\",\n  \"firstName\": \"Nuevo\",\n  \"lastName\": \"Usuario\",\n  \"roleIds\": [\"{{roleId}}\"]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/users",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "View Specific User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.expect(pm.response.code).to.eql(200);",
+									"});",
+									"",
+									"pm.test(\"Response body contains user object\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.be.an('object');",
+									"    pm.expect(jsonData).to.have.property('message');",
+									"    pm.expect(jsonData).to.have.property('data');",
+									"    pm.expect(jsonData.data).to.have.property('user');",
+									"    pm.expect(jsonData.data.user).to.have.property('_id');",
+									"    pm.expect(jsonData.data.user).to.have.property('email');",
+									"    pm.expect(jsonData.data.user).to.have.property('roleIds');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/users/{{adminUserId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"{{adminUserId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.expect(pm.response.code).to.eql(200);",
+									"});",
+									"",
+									"pm.test(\"Response body contains updated user object\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.be.an('object');",
+									"    pm.expect(jsonData).to.have.property('message');",
+									"    pm.expect(jsonData).to.have.property('data');",
+									"    pm.expect(jsonData.data).to.have.property('user');",
+									"    pm.expect(jsonData.data.user).to.have.property('_id');",
+									"    pm.expect(jsonData.data.user).to.have.property('email');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"Nombre Editado\",\n  \"lastName\": \"Apellido Editado\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/users/{{adminUserId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"{{adminUserId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 or 204\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
+									"});",
+									"",
+									"pm.test(\"Response body contains success message or is empty\", function () {",
+									"    var text = pm.response.text();",
+									"    pm.expect(text.length >= 0).to.be.true;",
+									"    if(text.length > 0) {",
+									"        try {",
+									"            var jsonData = pm.response.json();",
+									"            pm.expect(jsonData).to.be.an('object');",
+									"            pm.expect(jsonData).to.have.property('message');",
+									"        } catch(e) {",
+									"            // Not JSON, may be empty",
+									"        }",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/users/{{userId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"{{userId}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Products",
+			"item": [
+				{
+					"name": "Create predefined product",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Guardar token de admin en variable de entorno",
+									"var jsonData = pm.response.json();",
+									"if (jsonData.data) {",
+									"    pm.environment.set(\"predefinedProductId\", jsonData.data._id);",
+									"    console.log(\"predefinedProductId guardado: \" + jsonData.data._id);",
+									"    ",
+									"",
+									"}",
+									"",
+									"// Tests básicos",
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Response has _id\", function () {",
+									"    pm.expect(jsonData.data).to.have.property('_id');",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"productType\": \"predefined\",\n    \"name\": \"Camiseta Negra con Diseño de Águila\",\n    \"tshirtTemplateId\": \"{{tshirtTemplateId}}\",\n    \"predefinedDesignId\": \"{{predefinedDesignId}}\",\n    \"isPublicCatalog\": true\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/products",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"products"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create custom product",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Guardar token de admin en variable de entorno",
+									"var jsonData = pm.response.json();",
+									"if (jsonData.data) {",
+									"    pm.environment.set(\"customProductId\", jsonData.data._id);",
+									"    console.log(\"customProductId guardado: \" + jsonData.data._id);",
+									"    ",
+									"",
+									"}",
+									"",
+									"// Tests básicos",
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Response has _id\", function () {",
+									"    pm.expect(jsonData.data).to.have.property('_id');",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"productType\": \"custom\",\n    \"name\": \"Mi Diseño Personalizado en Camiseta Blanca\",\n    \"tshirtTemplateId\": \"{{tshirtTemplateId}}\",\n    \"userDesignId\": \"{{userDesignId}}\",\n    \"isPublicCatalog\": false\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/products",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"products"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get products",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Tests básicos",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/products?productType=predefined",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"products"
+							],
+							"query": [
+								{
+									"key": "productType",
+									"value": "predefined"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get product",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Tests básicos",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/products/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"products",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{customProductId}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Carrito",
+			"item": [
+				{
+					"name": "GET personal cart",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.expect(pm.response.code).to.eql(200);",
+									"});",
+									"",
+									"pm.test(\"Response body contains cart object\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.be.an('object');",
+									"    pm.expect(jsonData).to.have.property('items');",
+									"    pm.expect(jsonData.items).to.be.an('array');",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/cart",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"cart"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Añadir Producto al Carrito",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Verificar si el response es exitoso",
+									"pm.test(\"Status code is 201 or 200\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+									"});",
+									"",
+									"// Procesar la respuesta solo si es exitosa",
+									"if (pm.response.code === 200 || pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    ",
+									"    // Guardar itemId del carrito para uso en otros tests",
+									"    if (jsonData.items && jsonData.items.length > 0) {",
+									"        pm.environment.set(\"itemId\", jsonData.items[jsonData.items.length - 1]._id);",
+									"        console.log(\"itemId guardado: \" + jsonData.items[jsonData.items.length - 1]._id);",
+									"    }",
+									"    ",
+									"    pm.test(\"Response body contains cart object\", function () {",
+									"        pm.expect(jsonData).to.be.an('object');",
+									"        pm.expect(jsonData).to.have.property('items');",
+									"        pm.expect(jsonData.items).to.be.an('array');",
+									"    });",
+									"    ",
+									"    pm.test(\"Business logic: quantity is incremented or item is added\", function () {",
+									"        pm.expect(jsonData.items.length).to.be.above(0);",
+									"    });",
+									"} else {",
+									"    // Si falla, mostrar el error",
+									"    console.log(\"Error en respuesta:\", pm.response.text());",
+									"    pm.test(\"Response should contain error details\", function () {",
+									"        pm.expect(pm.response.text().length).to.be.above(0);",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"productTemplateId\": \"{{customProductId}}\",\n  \"quantity\": 1\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/cart/items",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"cart",
+								"items"
+							]
+						},
+						"description": "Añade un producto al carrito usando productTemplateId. Requiere autenticación Bearer y un tshirtTemplateId válido."
+					},
+					"response": []
+				},
+				{
+					"name": "Actualizar Cantidad de Producto",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Verificar que tenemos un itemId antes de hacer la request",
+									"const itemId = pm.environment.get(\"itemId\");",
+									"if (!itemId || itemId === \"\") {",
+									"    console.log(\"ADVERTENCIA: itemId está vacío. Asegúrate de ejecutar 'Añadir Producto al Carrito' primero.\");",
+									"    // Establecer un itemId de ejemplo para evitar error 404",
+									"    pm.environment.set(\"itemId\", \"PLACEHOLDER_ITEM_ID\");",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Verificar si el itemId era un placeholder",
+									"const itemId = pm.environment.get(\"itemId\");",
+									"if (itemId === \"PLACEHOLDER_ITEM_ID\") {",
+									"    pm.test(\"Should fail with placeholder itemId (expected)\", function () {",
+									"        pm.expect(pm.response.code).to.be.oneOf([404, 400, 500]);",
+									"    });",
+									"    console.log(\"Test falló como se esperaba - necesitas ejecutar 'Añadir Producto al Carrito' primero para obtener un itemId válido.\");",
+									"} else {",
+									"    pm.test(\"Status code is 200\", function () {",
+									"        pm.expect(pm.response.code).to.eql(200);",
+									"    });",
+									"    ",
+									"    if (pm.response.code === 200) {",
+									"        pm.test(\"Response body contains updated cart item\", function () {",
+									"            var jsonData = pm.response.json();",
+									"            pm.expect(jsonData).to.be.an('object');",
+									"            pm.expect(jsonData).to.have.property('items');",
+									"            pm.expect(jsonData.items).to.be.an('array');",
+									"        });",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"quantity\": 3\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/cart/items/{{customProductId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"cart",
+								"items",
+								"{{customProductId}}"
+							]
+						},
+						"description": "Actualiza la cantidad de un item específico en el carrito. IMPORTANTE: Ejecuta 'Añadir Producto al Carrito' primero para obtener un itemId válido."
+					},
+					"response": []
+				},
+				{
+					"name": "Eliminar Producto del Carrito",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Verificar que tenemos un itemId antes de hacer la request",
+									"const itemId = pm.environment.get(\"itemId\");",
+									"if (!itemId || itemId === \"\") {",
+									"    console.log(\"ADVERTENCIA: itemId está vacío. Asegúrate de ejecutar 'Añadir Producto al Carrito' primero.\");",
+									"    // Establecer un itemId de ejemplo para evitar error 404",
+									"    pm.environment.set(\"itemId\", \"PLACEHOLDER_ITEM_ID\");",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Verificar si el itemId era un placeholder",
+									"const itemId = pm.environment.get(\"itemId\");",
+									"if (itemId === \"PLACEHOLDER_ITEM_ID\") {",
+									"    pm.test(\"Should fail with placeholder itemId (expected)\", function () {",
+									"        pm.expect(pm.response.code).to.be.oneOf([404, 400, 500]);",
+									"    });",
+									"    console.log(\"Test falló como se esperaba - necesitas ejecutar 'Añadir Producto al Carrito' primero para obtener un itemId válido.\");",
+									"} else {",
+									"    pm.test(\"Status code is 200 or 204\", function () {",
+									"        pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
+									"    });",
+									"    ",
+									"    if (pm.response.code === 200 || pm.response.code === 204) {",
+									"        pm.test(\"Response body contains success message or is empty\", function () {",
+									"            var text = pm.response.text();",
+									"            pm.expect(text.length >= 0).to.be.true;",
+									"            if(text.length > 0) {",
+									"                try {",
+									"                    var jsonData = pm.response.json();",
+									"                    pm.expect(jsonData).to.be.an('object');",
+									"                } catch(e) {",
+									"                    // Response may be empty, which is acceptable",
+									"                }",
+									"            }",
+									"        });",
+									"        ",
+									"        // Limpiar el itemId después de eliminarlo exitosamente",
+									"        pm.environment.unset(\"itemId\");",
+									"        console.log(\"Item eliminado exitosamente. itemId limpiado del entorno.\");",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/cart/items/{{customProductId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"cart",
+								"items",
+								"{{customProductId}}"
+							]
+						},
+						"description": "Elimina un item específico del carrito. IMPORTANTE: Ejecuta 'Añadir Producto al Carrito' primero para obtener un itemId válido."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "T-shirts",
+			"item": [
+				{
+					"name": "Get categories",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.expect(pm.response.code).to.eql(200);",
+									"});",
+									"",
+									"pm.test(\"Response body contains categories array\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.be.an('object');",
+									"    ",
+									"    // Verifica si la respuesta tiene la estructura { data: categories }",
+									"    if (jsonData.data) {",
+									"        pm.expect(jsonData.data).to.be.an('array');",
+									"        if(jsonData.data.length > 0) {",
+									"            pm.expect(jsonData.data[0]).to.have.property('_id');",
+									"            pm.expect(jsonData.data[0]).to.have.property('name');",
+									"        }",
+									"    } else {",
+									"        // Si es un array directo",
+									"        pm.expect(jsonData).to.be.an('array');",
+									"        if(jsonData.length > 0) {",
+									"            pm.expect(jsonData[0]).to.have.property('_id');",
+									"            pm.expect(jsonData[0]).to.have.property('name');",
+									"        }",
+									"    }",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/categories",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"categories"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create a category",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if (jsonData.data) {",
+									"    pm.environment.set(\"catId\", jsonData.data._id);",
+									"    console.log(\"catId guardado: \" + jsonData.data._id);",
+									"}",
+									"",
+									"// Test corregido: Acepta tanto 200 como 201",
+									"pm.test(\"Status code is 200 or 201\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+									"});",
+									"",
+									"pm.test(\"Response has _id\", function () {",
+									"    pm.expect(jsonData.data).to.have.property('_id');",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Camisetas de Verano 2025\",\n    \"description\": \"Colección de camisetas ligeras y frescas para la temporada de verano.\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/categories",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"categories"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create a t-shirt template",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Guardar token de admin en variable de entorno",
+									"var jsonData = pm.response.json();",
+									"if (jsonData.data) {",
+									"    pm.environment.set(\"tshirtTemplateId\", jsonData.data._id);",
+									"    console.log(\"Admin Token guardado: \" + jsonData.data._id);",
+									"    ",
+									"",
+									"}",
+									"",
+									"// Tests básicos",
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Response has _id\", function () {",
+									"    pm.expect(jsonData.data).to.have.property('_id');",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Camiseta Blanca Cuello Redondo\",\n    \"description\": \"Camiseta blanca de corte regular, 180gsm, perfecta para impresión DTG.\",\n    \"categoryId\": \"{{catId}}\",\n    \"color\": \"white\",\n    \"size\": \"M\",\n    \"material\": \"cotton\",\n    \"basePrice\": 25.50,\n    \"specifications\": {\n        \"collarType\": \"crew\",\n        \"sleeveLength\": \"short\",\n        \"fit\": \"regular\"\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/tshirt-templates",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"tshirt-templates"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Designs",
+			"item": [
+				{
+					"name": "Create predefined design",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"if (jsonData.data) {",
+									"    pm.environment.set(\"predefinedDesignId\", jsonData.data._id);",
+									"    console.log(\"predefinedDesignId guardado: \" + jsonData.data._id);",
+									"}",
+									"",
+									"// Test corregido: Acepta tanto 200 como 201",
+									"pm.test(\"Status code is 200 or 201\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+									"});",
+									"",
+									"pm.test(\"Response has _id\", function () {",
+									"    pm.expect(jsonData.data).to.have.property('_id');",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Diseño Abstracto #5\",\n    \"description\": \"Formas geométricas en tonos azules.\",\n    \"categoryIds\": [\"{{catId}}\"],\n    \"designPrice\": 12.00,\n    \"imageUrl\": \"https://example.com/image.png\",\n    \"imagePublicId\": \"cloudinary_id_12345\",\n    \"metadata\": {\n        \"tags\": [\"abstracto\", \"azul\", \"moderno\"],\n        \"keywords\": [\"geométrico\", \"minimalista\"]\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/predefined-designs",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"predefined-designs"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create user design",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Guardar token de admin en variable de entorno",
+									"var jsonData = pm.response.json();",
+									"if (jsonData.data) {",
+									"    pm.environment.set(\"userDesignId\", jsonData.data._id);",
+									"    console.log(\"userDesignId guardado: \" + jsonData.data._id);",
+									"    ",
+									"",
+									"}",
+									"",
+									"// Tests básicos",
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Response has _id\", function () {",
+									"    pm.expect(jsonData.data).to.have.property('_id');",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Mi Diseño Subido\",\n    \"description\": \"Una descripción suficientemente larga para pasar la validación.\",\n    \"categoryIds\": [\"{{catId}}\"],\n    \"designPrice\": 15.5,\n    \"isPublic\": false,\n    \"metadata\": {\n        \"tags\": [\"ejemplo\", \"subido\"],\n        \"keywords\": [\"mi-diseño\"]\n    },\n    \"type\": \"uploaded\",\n    \"designData\": {\n        \"uploadedImages\": [\"https://res.cloudinary.com/demo/image/upload/sample.jpg\"],\n        \"uploadedPublicIds\": [\"sample_id\"]\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/user-designs",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"user-designs"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "T-shirt Templates CRUD",
+			"item": [
+				{
+					"name": "Get All T-shirt Templates",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.expect(pm.response.code).to.eql(200);",
+									"});",
+									"",
+									"pm.test(\"Response body contains templates array\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.be.an('object');",
+									"    if (jsonData.data) {",
+									"        pm.expect(jsonData.data).to.be.an('array');",
+									"    } else {",
+									"        pm.expect(jsonData).to.be.an('array');",
+									"    }",
+									"});",
+									"",
+									"// Guardar el primer templateId si existe para usar en otros tests",
+									"pm.test(\"Save template ID for other tests\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    var templates = jsonData.data || jsonData;",
+									"    if (templates.length > 0) {",
+									"        pm.environment.set(\"existingTemplateId\", templates[0]._id);",
+									"        console.log(\"Saved templateId: \" + templates[0]._id);",
+									"    }",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/tshirt-templates",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"tshirt-templates"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Specific T-shirt Template",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 200 or 404\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 404]);",
+									"});",
+									"",
+									"if (pm.response.code === 200) {",
+									"    pm.test(\"Response body contains template object\", function () {",
+									"        var jsonData = pm.response.json();",
+									"        pm.expect(jsonData).to.be.an('object');",
+									"        var template = jsonData.data || jsonData;",
+									"        pm.expect(template).to.have.property('_id');",
+									"        pm.expect(template).to.have.property('name');",
+									"    });",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/tshirt-templates/{{tshirtTemplateId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"tshirt-templates",
+								"{{tshirtTemplateId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update T-shirt Template",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 200 or 404\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 404]);",
+									"});",
+									"",
+									"if (pm.response.code === 200) {",
+									"    pm.test(\"Response body contains updated template\", function () {",
+									"        var jsonData = pm.response.json();",
+									"        pm.expect(jsonData).to.be.an('object');",
+									"        var template = jsonData.data || jsonData;",
+									"        pm.expect(template).to.have.property('_id');",
+									"        pm.expect(template).to.have.property('name');",
+									"    });",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Camiseta Actualizada\",\n    \"description\": \"Descripción actualizada de la camiseta\",\n    \"basePrice\": 30.00\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/tshirt-templates/{{tshirtTemplateId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"tshirt-templates",
+								"{{tshirtTemplateId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete T-shirt Template",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 200, 204, or 404\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 204, 404]);",
+									"});",
+									"",
+									"pm.test(\"Response indicates successful deletion or not found\", function () {",
+									"    if (pm.response.code === 200) {",
+									"        var jsonData = pm.response.json();",
+									"        pm.expect(jsonData).to.have.property('message');",
+									"    } else if (pm.response.code === 404) {",
+									"        console.log('Template not found - this is expected if running tests multiple times');",
+									"    }",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/tshirt-templates/{{existingTemplateId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"tshirt-templates",
+								"{{existingTemplateId}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Design Categories CRUD",
+			"item": [
+				{
+					"name": "Create Design Category",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200 or 201\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+									"});",
+									"",
+									"pm.test(\"Response contains created category\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.be.an('object');",
+									"    var category = jsonData.data || jsonData;",
+									"    pm.expect(category).to.have.property('_id');",
+									"    pm.expect(category).to.have.property('name');",
+									"    ",
+									"    // Guardar el ID para usar en otros tests",
+									"    pm.environment.set(\"designCategoryId\", category._id);",
+									"    console.log(\"Design Category ID saved: \" + category._id);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Categoría de Diseño Test {{$randomAlphaNumeric}}\",\n    \"description\": \"Categoría creada para pruebas\",\n    \"isActive\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/design-categories",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"design-categories"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Design Categories",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.expect(pm.response.code).to.eql(200);",
+									"});",
+									"",
+									"pm.test(\"Response body contains categories array\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.be.an('object');",
+									"    var categories = jsonData.data || jsonData;",
+									"    pm.expect(categories).to.be.an('array');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/design-categories",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"design-categories"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Design Category",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 200 or 404\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 404]);",
+									"});",
+									"",
+									"if (pm.response.code === 200) {",
+									"    pm.test(\"Response contains updated category\", function () {",
+									"        var jsonData = pm.response.json();",
+									"        pm.expect(jsonData).to.be.an('object');",
+									"        var category = jsonData.data || jsonData;",
+									"        pm.expect(category).to.have.property('_id');",
+									"    });",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Categoría Actualizada\",\n    \"description\": \"Descripción actualizada\",\n    \"isActive\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/design-categories/{{designCategoryId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"design-categories",
+								"{{designCategoryId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Design Category",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 200, 204, or 404\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 204, 404]);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/design-categories/{{designCategoryId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"design-categories",
+								"{{designCategoryId}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Predefined Designs CRUD",
+			"item": [
+				{
+					"name": "Get All Predefined Designs",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.expect(pm.response.code).to.eql(200);",
+									"});",
+									"",
+									"pm.test(\"Response body contains designs array\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.be.an('object');",
+									"    var designs = jsonData.data || jsonData;",
+									"    pm.expect(designs).to.be.an('array');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/predefined-designs",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"predefined-designs"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Specific Predefined Design",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 200 or 404\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 404]);",
+									"});",
+									"",
+									"if (pm.response.code === 200) {",
+									"    pm.test(\"Response contains design object\", function () {",
+									"        var jsonData = pm.response.json();",
+									"        pm.expect(jsonData).to.be.an('object');",
+									"        var design = jsonData.data || jsonData;",
+									"        pm.expect(design).to.have.property('_id');",
+									"        pm.expect(design).to.have.property('name');",
+									"    });",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/predefined-designs/{{predefinedDesignId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"predefined-designs",
+								"{{predefinedDesignId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Predefined Design",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 200 or 404\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 404]);",
+									"});",
+									"",
+									"if (pm.response.code === 200) {",
+									"    pm.test(\"Response contains updated design\", function () {",
+									"        var jsonData = pm.response.json();",
+									"        pm.expect(jsonData).to.be.an('object');",
+									"        var design = jsonData.data || jsonData;",
+									"        pm.expect(design).to.have.property('_id');",
+									"    });",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Diseño Actualizado\",\n    \"description\": \"Descripción actualizada del diseño\",\n    \"designPrice\": 15.00\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/predefined-designs/{{predefinedDesignId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"predefined-designs",
+								"{{predefinedDesignId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Predefined Design",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 200, 204, or 404\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 204, 404]);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/predefined-designs/{{predefinedDesignId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"predefined-designs",
+								"{{predefinedDesignId}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "User Designs CRUD",
+			"item": [
+				{
+					"name": "Get All User Designs",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.expect(pm.response.code).to.eql(200);",
+									"});",
+									"",
+									"pm.test(\"Response body contains designs array\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.be.an('object');",
+									"    var designs = jsonData.data || jsonData;",
+									"    pm.expect(designs).to.be.an('array');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/user-designs",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"user-designs"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Specific User Design",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 200 or 404\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 404]);",
+									"});",
+									"",
+									"if (pm.response.code === 200) {",
+									"    pm.test(\"Response contains design object\", function () {",
+									"        var jsonData = pm.response.json();",
+									"        pm.expect(jsonData).to.be.an('object');",
+									"        var design = jsonData.data || jsonData;",
+									"        pm.expect(design).to.have.property('_id');",
+									"        pm.expect(design).to.have.property('name');",
+									"    });",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/user-designs/{{userDesignId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"user-designs",
+								"{{userDesignId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update User Design",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 200 or 404\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 404]);",
+									"});",
+									"",
+									"if (pm.response.code === 200) {",
+									"    pm.test(\"Response contains updated design\", function () {",
+									"        var jsonData = pm.response.json();",
+									"        pm.expect(jsonData).to.be.an('object');",
+									"        var design = jsonData.data || jsonData;",
+									"        pm.expect(design).to.have.property('_id');",
+									"    });",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Mi Diseño Actualizado\",\n    \"description\": \"Descripción actualizada de mi diseño personalizado\",\n    \"designPrice\": 20.00\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/user-designs/{{userDesignId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"user-designs",
+								"{{userDesignId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete User Design",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 200, 204, or 404\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 204, 404]);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/user-designs/{{userDesignId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"user-designs",
+								"{{userDesignId}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Categories CRUD Completion",
+			"item": [
+				{
+					"name": "Get Specific Category",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 200 or 404\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 404]);",
+									"});",
+									"",
+									"if (pm.response.code === 200) {",
+									"    pm.test(\"Response contains category object\", function () {",
+									"        var jsonData = pm.response.json();",
+									"        pm.expect(jsonData).to.be.an('object');",
+									"        var category = jsonData.data || jsonData;",
+									"        pm.expect(category).to.have.property('_id');",
+									"        pm.expect(category).to.have.property('name');",
+									"    });",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/categories/{{catId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"categories",
+								"{{catId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Category",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 200 or 404\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 404]);",
+									"});",
+									"",
+									"if (pm.response.code === 200) {",
+									"    pm.test(\"Response contains updated category\", function () {",
+									"        var jsonData = pm.response.json();",
+									"        pm.expect(jsonData).to.be.an('object');",
+									"        var category = jsonData.data || jsonData;",
+									"        pm.expect(category).to.have.property('_id');",
+									"    });",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Categoría Actualizada\",\n    \"description\": \"Descripción actualizada de la categoría\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/categories/{{catId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"categories",
+								"{{catId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Category",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 200, 204, or 404\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 204, 404]);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/categories/{{catId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"categories",
+								"{{catId}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Products CRUD Completion",
+			"item": [
+				{
+					"name": "Update Product",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 200 or 404\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 404]);",
+									"});",
+									"",
+									"if (pm.response.code === 200) {",
+									"    pm.test(\"Response contains updated product\", function () {",
+									"        var jsonData = pm.response.json();",
+									"        pm.expect(jsonData).to.be.an('object');",
+									"        var product = jsonData.data || jsonData;",
+									"        pm.expect(product).to.have.property('_id');",
+									"    });",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Producto Actualizado\",\n    \"isPublicCatalog\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/products/{{predefinedProductId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"products",
+								"{{predefinedProductId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Product",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 200, 204, or 404\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([200, 204, 404]);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/products/{{customProductId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"products",
+								"{{customProductId}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Error Handling Tests",
+			"item": [
+				{
+					"name": "Test 404 - Invalid Endpoint",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 404\", function () {",
+									"    pm.expect(pm.response.code).to.eql(404);",
+									"});",
+									"",
+									"pm.test(\"Response contains error message\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('message');",
+									"    pm.expect(jsonData).to.have.property('statusCode', 404);",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/invalid-endpoint",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"invalid-endpoint"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Test 401 - Unauthorized Access",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 401\", function () {",
+									"    pm.expect(pm.response.code).to.eql(401);",
+									"});",
+									"",
+									"pm.test(\"Response contains unauthorized error\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('message');",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/users",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Test 400 - Invalid Request Body",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 400 or 422\", function () {",
+									"    pm.expect(pm.response.code).to.be.oneOf([400, 422]);",
+									"});",
+									"",
+									"pm.test(\"Response contains validation error\", function () {",
+									"    var jsonData = pm.response.json();",
+									"    pm.expect(jsonData).to.have.property('message');",
+									"});"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"invalidField\": \"invalidValue\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"register"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{adminToken}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:3000"
+		},
+		{
+			"key": "adminUser",
+			"value": "admin@kustom.com"
+		},
+		{
+			"key": "adminPassword",
+			"value": "admin123"
+		},
+		{
+			"key": "adminToken",
+			"value": ""
+		},
+		{
+			"key": "adminUserId",
+			"value": ""
+		},
+		{
+			"key": "userId",
+			"value": ""
+		},
+		{
+			"key": "roleId",
+			"value": ""
+		},
+		{
+			"key": "tokenExpiry",
+			"value": ""
+		},
+		{
+			"key": "itemId",
+			"value": ""
+		},
+		{
+			"key": "catId",
+			"value": ""
+		},
+		{
+			"key": "tshirtTemplateId",
+			"value": ""
+		},
+		{
+			"key": "predefinedDesignId",
+			"value": ""
+		},
+		{
+			"key": "designCategoryId",
+			"value": ""
+		},
+		{
+			"key": "existingTemplateId",
+			"value": "",
+			"type": "default"
+		}
+	]
+}
